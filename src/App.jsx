@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 
 export default function App() {
   // --- ESTADOS DE LA APLICACIÓN ---
-  // Controla en qué pantalla estamos: 'mapa' o 'leccion'
-  const [vistaActual, setVistaActual] = useState('mapa');
+  // Ahora la aplicación inicia por defecto en la pantalla de 'bienvenida'
+  const [vistaActual, setVistaActual] = useState('bienvenida'); 
   
   // Estadísticas globales del usuario
   const [vidas, setVidas] = useState(5);
@@ -42,13 +42,12 @@ export default function App() {
 
   // --- LÓGICA DE LA LECCIÓN ---
   const comprobarRespuesta = () => {
-    // Ahora validamos contra la respuesta correcta del diccionario, no contra un texto fijo
     if (respuesta.trim() === datosActuales.respuestaCorrecta) {
       setEstadoLeccion('correcto');
-      setXp(xp + 10); // Sumamos XP al ganar
+      setXp(xp + 10);
     } else {
       setEstadoLeccion('incorrecto');
-      if (vidas > 0) setVidas(vidas - 1); // Restamos una vida al fallar
+      if (vidas > 0) setVidas(vidas - 1);
     }
   };
 
@@ -65,12 +64,50 @@ export default function App() {
 
   const recargarVidas = () => {
     setVidas(5);
-    setVistaActual('mapa'); // Vuelve al mapa por seguridad
+    setVistaActual('mapa');
   };
+
+  // --- NUEVO: RENDERIZADO DE BIENVENIDA ---
+  const renderBienvenida = () => (
+    <div className="contenedor-landing">
+      <div className="logo-app">🐍</div>
+      <h1 className="titulo-principal">DuoPython</h1>
+      <p className="subtitulo">Aprende a programar divirtiéndote. Sube de nivel y domina el código.</p>
+      
+      <div className="grupo-botones-inicio">
+        {/* Este botón simula la creación de una cuenta nueva y te lleva al mapa */}
+        <button className="btn-empezar" onClick={() => setVistaActual('mapa')}>
+          ¡EMPEZAR AHORA!
+        </button>
+        {/* Este botón te lleva al formulario de login */}
+        <button className="btn-login" onClick={() => setVistaActual('login')}>
+          YA TENGO UNA CUENTA
+        </button>
+      </div>
+    </div>
+  );
+
+  // --- NUEVO: RENDERIZADO DE LOGIN ---
+  const renderLogin = () => (
+    <div className="contenedor-landing">
+      <h2 className="titulo-principal">Ingresa a tu cuenta</h2>
+      
+      <input type="email" placeholder="Correo electrónico" className="input-formulario" />
+      <input type="password" placeholder="Contraseña" className="input-formulario" />
+      
+      <div className="grupo-botones-inicio">
+        <button className="btn-empezar" onClick={() => setVistaActual('mapa')}>
+          INGRESAR
+        </button>
+        <button className="btn-login" onClick={() => setVistaActual('bienvenida')}>
+          VOLVER
+        </button>
+      </div>
+    </div>
+  );
 
   // --- RENDERIZADO DEL MAPA ---
   const renderMapa = () => {
-    // La magia de la progresión: React calcula si rompe el candado
     const nivel2Desbloqueado = xp >= 10;
     const nivel3Desbloqueado = xp >= 20;
 
@@ -78,7 +115,6 @@ export default function App() {
       <div className="contenedor-mapa">
         <h2 className="titulo-seccion">Módulo 1: Fundamentos</h2>
         
-        {/* Nodo 1: Siempre Activo */}
         <div className="nodo-camino activo" onClick={() => abrirLeccion(1)}>
           <div className="icono-nodo">⭐</div>
         </div>
@@ -86,7 +122,6 @@ export default function App() {
 
         <div className="linea-conectora"></div>
 
-        {/* Nodo 2: Dinámico */}
         <div 
           className={`nodo-camino ${nivel2Desbloqueado ? 'activo' : 'bloqueado'}`} 
           onClick={() => nivel2Desbloqueado && abrirLeccion(2)}
@@ -97,7 +132,6 @@ export default function App() {
         
         <div className="linea-conectora"></div>
 
-        {/* Nodo 3: Dinámico */}
         <div 
           className={`nodo-camino ${nivel3Desbloqueado ? 'activo' : 'bloqueado'}`}
           onClick={() => nivel3Desbloqueado && abrirLeccion(3)}
@@ -112,12 +146,9 @@ export default function App() {
   // --- RENDERIZADO DE LA LECCIÓN ---
   const renderLeccion = () => (
     <div className="contenedor-leccion">
-      {}
       <h3 className="subtitulo-gris">Módulo 1: Fundamentos de Python</h3>
       <h1 className="titulo-leccion">Lección: {datosActuales.titulo}</h1>
-      <p className="instruccion">
-        {datosActuales.instruccion}
-      </p>
+      <p className="instruccion">{datosActuales.instruccion}</p>
 
       <div className="editor-codigo">
         <p><span className="keyword">configuracion_servidor</span> = {'{'}</p>
@@ -175,20 +206,46 @@ export default function App() {
     </div>
   );
 
+  // CONTROL MAESTRO DE PANTALLAS
+  const renderPantallaActual = () => {
+    if (vistaActual === 'bienvenida') return renderBienvenida();
+    if (vistaActual === 'login') return renderLogin();
+    if (vidas === 0) return renderSinVidas();
+    if (vistaActual === 'mapa') return renderMapa();
+    if (vistaActual === 'leccion') return renderLeccion();
+  };
+
   // --- RENDERIZADO PRINCIPAL ---
   return (
     <div className="app-global">
-      {/* INYECCIÓN DE ESTILOS CSS EN EL MISMO ARCHIVO */}
       <style>{`
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f7f7; color: #3c3c3c; }
         .app-global { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
         
-        /* HEADER */
+        /* HEADER (Oculto en landing) */
         .header-stats { display: flex; justify-content: center; gap: 30px; padding: 20px; border-bottom: 2px solid #eee; font-size: 1.2rem; font-weight: bold; background: white; position: sticky; top: 0; z-index: 10; }
         .stat-fuego { color: #ff9600; }
         .stat-vidas { color: #ff4b4b; }
         .stat-xp { color: #58cc02; }
         
+        /* NUEVO: ESTILOS LANDING Y LOGIN */
+        .contenedor-landing { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; padding: 40px 20px; text-align: center; }
+        .logo-app { font-size: 6rem; margin-bottom: 10px; animation: flotar 3s ease-in-out infinite; }
+        .titulo-principal { font-size: 2.5rem; color: #4b4b4b; margin: 0 0 15px 0; }
+        .subtitulo { font-size: 1.2rem; color: #777; margin-bottom: 40px; max-width: 80%; line-height: 1.5; }
+        .grupo-botones-inicio { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 320px; }
+        
+        .input-formulario { width: 100%; max-width: 300px; padding: 18px; margin-bottom: 15px; border: 2px solid #e5e5e5; border-radius: 15px; font-size: 1.1rem; background-color: #f9f9f9; outline: none; transition: border 0.2s; box-sizing: border-box; }
+        .input-formulario:focus { border-color: #1cb0f6; background-color: white; }
+
+        .btn-empezar { background-color: #58cc02; color: white; border: none; padding: 18px; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #58a700; transition: transform 0.1s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-empezar:active { box-shadow: 0 0 0 #58a700; transform: translateY(6px); }
+        
+        .btn-login { background-color: transparent; color: #1cb0f6; border: 2px solid #e5e5e5; padding: 18px; border-radius: 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 0 #e5e5e5; transition: transform 0.1s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-login:active { box-shadow: 0 0 0 #e5e5e5; transform: translateY(6px); }
+
+        @keyframes flotar { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+
         /* MAPA */
         .contenedor-mapa { padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
         .titulo-seccion { width: 100%; text-align: left; font-size: 1.5rem; margin-bottom: 40px; color: #4b4b4b; }
@@ -220,7 +277,6 @@ export default function App() {
         .btn-comprobar, .btn-continuar { width: 100%; padding: 18px; border-radius: 15px; font-size: 1.2rem; font-weight: bold; text-align: center; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: auto; transition: transform 0.1s; }
         .btn-comprobar { background-color: #58cc02; color: white; box-shadow: 0 6px 0 #58a700; }
         .btn-comprobar:active { box-shadow: 0 0 0 #58a700; transform: translateY(6px); }
-        
         .btn-continuar { background-color: #58cc02; color: white; box-shadow: 0 6px 0 #58a700; }
         
         .alerta-error { background-color: #ffdfe0; color: #ea2b2b; padding: 15px; border-radius: 10px; font-weight: bold; text-align: center; margin-bottom: 20px; border: 2px solid #ea2b2b; }
@@ -236,15 +292,17 @@ export default function App() {
         @keyframes latido-roto { 0% { transform: scale(1); } 50% { transform: scale(1.1) rotate(-5deg); } 100% { transform: scale(1); } }
       `}</style>
 
-      {/* BARRA SUPERIOR FIJA */}
-      <div className="header-stats">
-        <span className="stat-fuego">🔥 {racha}</span>
-        <span className="stat-vidas">❤️ {vidas}</span>
-        <span className="stat-xp">⚡ {xp} XP</span>
-      </div>
+      {/* Renderizar el Header SOLO si no estamos en bienvenida o login */}
+      {vistaActual !== 'bienvenida' && vistaActual !== 'login' && (
+        <div className="header-stats">
+          <span className="stat-fuego">🔥 {racha}</span>
+          <span className="stat-vidas">❤️ {vidas}</span>
+          <span className="stat-xp">⚡ {xp} XP</span>
+        </div>
+      )}
 
-      {/* RENDERIZADO CONDICIONAL MODIFICADO */}
-      {vidas === 0 ? renderSinVidas() : (vistaActual === 'mapa' ? renderMapa() : renderLeccion())}
+      {/* Renderizar la pantalla correspondiente */}
+      {renderPantallaActual()}
       
     </div>
   );
