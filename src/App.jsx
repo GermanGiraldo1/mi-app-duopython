@@ -13,10 +13,37 @@ export default function App() {
   // Estados específicos de la lección
   const [respuesta, setRespuesta] = useState('');
   const [estadoLeccion, setEstadoLeccion] = useState('escribiendo'); // 'escribiendo', 'correcto', 'incorrecto'
+  
+  const [leccionActiva, setLeccionActiva] = useState(1);
+
+  // Diccionario maestro con los datos de cada nivel
+  const detallesLeccion = {
+    1: {
+      titulo: "Configura tu Servidor",
+      instruccion: "Tu primer servidor multijugador necesita configuración. Corrige el valor de unidades_disponibles para establecer 50 servidores operativos.",
+      variable: '"unidades_disponibles":',
+      respuestaCorrecta: '50'
+    },
+    2: {
+      titulo: "Variables y Tipos",
+      instruccion: "Define el límite de jugadores para el Lobby. Asigna el valor numérico 100 para permitir que entren todos.",
+      variable: '"limite_jugadores":',
+      respuestaCorrecta: '100'
+    },
+    3: {
+      titulo: "Automatización Base",
+      instruccion: "Activa el inicio automático del servidor. En Python los booleanos empiezan con mayúscula, escribe True.",
+      variable: '"encendido_auto":',
+      respuestaCorrecta: 'True'
+    }
+  };
+
+  const datosActuales = detallesLeccion[leccionActiva];
 
   // --- LÓGICA DE LA LECCIÓN ---
   const comprobarRespuesta = () => {
-    if (respuesta.trim() === '50') {
+    // Ahora validamos contra la respuesta correcta del diccionario, no contra un texto fijo
+    if (respuesta.trim() === datosActuales.respuestaCorrecta) {
       setEstadoLeccion('correcto');
       setXp(xp + 10); // Sumamos XP al ganar
     } else {
@@ -31,49 +58,65 @@ export default function App() {
     setRespuesta('');
   };
 
+  const abrirLeccion = (idNivel) => {
+    setLeccionActiva(idNivel);
+    setVistaActual('leccion');
+  };
+
   const recargarVidas = () => {
     setVidas(5);
     setVistaActual('mapa'); // Vuelve al mapa por seguridad
   };
 
   // --- RENDERIZADO DEL MAPA ---
-  const renderMapa = () => (
-    <div className="contenedor-mapa">
-      <h2 className="titulo-seccion">Módulo 1: Fundamentos</h2>
-      
-      {/* Nodo 1: Activo */}
-      <div className="nodo-camino activo" onClick={() => setVistaActual('leccion')}>
-        <div className="icono-nodo">⭐</div>
-      </div>
-      <p className="texto-nodo">Configura tu Servidor</p>
+  const renderMapa = () => {
+    // La magia de la progresión: React calcula si rompe el candado
+    const nivel2Desbloqueado = xp >= 10;
+    const nivel3Desbloqueado = xp >= 20;
 
-      {/* Línea conectora */}
-      <div className="linea-conectora"></div>
+    return (
+      <div className="contenedor-mapa">
+        <h2 className="titulo-seccion">Módulo 1: Fundamentos</h2>
+        
+        {/* Nodo 1: Siempre Activo */}
+        <div className="nodo-camino activo" onClick={() => abrirLeccion(1)}>
+          <div className="icono-nodo">⭐</div>
+        </div>
+        <p className="texto-nodo">Configura tu Servidor</p>
 
-      {/* Nodo 2: Bloqueado */}
-      <div className="nodo-camino bloqueado">
-        <div className="icono-nodo">🔒</div>
-      </div>
-      <p className="texto-nodo gris">Variables y Tipos</p>
-      
-      {/* Línea conectora */}
-      <div className="linea-conectora"></div>
+        <div className="linea-conectora"></div>
 
-      {/* Nodo 3: Bloqueado */}
-      <div className="nodo-camino bloqueado">
-        <div className="icono-nodo">🔒</div>
+        {/* Nodo 2: Dinámico */}
+        <div 
+          className={`nodo-camino ${nivel2Desbloqueado ? 'activo' : 'bloqueado'}`} 
+          onClick={() => nivel2Desbloqueado && abrirLeccion(2)}
+        >
+          <div className="icono-nodo">{nivel2Desbloqueado ? '⭐' : '🔒'}</div>
+        </div>
+        <p className={`texto-nodo ${!nivel2Desbloqueado ? 'gris' : ''}`}>Variables y Tipos</p>
+        
+        <div className="linea-conectora"></div>
+
+        {/* Nodo 3: Dinámico */}
+        <div 
+          className={`nodo-camino ${nivel3Desbloqueado ? 'activo' : 'bloqueado'}`}
+          onClick={() => nivel3Desbloqueado && abrirLeccion(3)}
+        >
+          <div className="icono-nodo">{nivel3Desbloqueado ? '⭐' : '🔒'}</div>
+        </div>
+        <p className={`texto-nodo ${!nivel3Desbloqueado ? 'gris' : ''}`}>Automatización Base</p>
       </div>
-      <p className="texto-nodo gris">Automatización Base</p>
-    </div>
-  );
+    );
+  };
 
   // --- RENDERIZADO DE LA LECCIÓN ---
   const renderLeccion = () => (
     <div className="contenedor-leccion">
+      {}
       <h3 className="subtitulo-gris">Módulo 1: Fundamentos de Python</h3>
-      <h1 className="titulo-leccion">Lección: Configura tu Servidor</h1>
+      <h1 className="titulo-leccion">Lección: {datosActuales.titulo}</h1>
       <p className="instruccion">
-        Tu primer servidor multijugador necesita configuración. Corrige el valor de <strong>unidades_disponibles</strong> para establecer 50 servidores operativos.
+        {datosActuales.instruccion}
       </p>
 
       <div className="editor-codigo">
@@ -81,7 +124,7 @@ export default function App() {
         <p className="indent">"nombre": <span className="string">"Servidor_Principal"</span>,</p>
         <p className="indent">"puerto": <span className="number">8080</span>,</p>
         <p className="indent">
-          "unidades_disponibles": 
+          {datosActuales.variable} 
           <input 
             type="text" 
             className="input-codigo"
