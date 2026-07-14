@@ -31,6 +31,11 @@ export default function App() {
     setRespuesta('');
   };
 
+  const recargarVidas = () => {
+    setVidas(5);
+    setVistaActual('mapa'); // Vuelve al mapa por seguridad
+  };
+
   // --- RENDERIZADO DEL MAPA ---
   const renderMapa = () => (
     <div className="contenedor-mapa">
@@ -113,6 +118,20 @@ export default function App() {
     </div>
   );
 
+  // --- RENDERIZADO DE SIN VIDAS ---
+  const renderSinVidas = () => (
+    <div className="contenedor-sin-vidas">
+      <div className="corazon-roto">💔</div>
+      <h1 className="titulo-leccion">¡Te quedaste sin vidas!</h1>
+      <p className="instruccion">
+        Cometiste demasiados errores configurando el servidor. Descansa un poco o recarga tus vidas para seguir aprendiendo.
+      </p>
+      <button className="btn-recargar" onClick={recargarVidas}>
+        RECARGAR VIDAS (Gratis por ahora)
+      </button>
+    </div>
+  );
+
   // --- RENDERIZADO PRINCIPAL ---
   return (
     <div className="app-global">
@@ -165,6 +184,13 @@ export default function App() {
         .area-exito { display: flex; flex-direction: column; gap: 20px; margin-top: auto; }
         .alerta-exito { background-color: #d7ffb8; color: #58a700; padding: 20px; border-radius: 15px; text-align: center; border: 2px solid #58cc02; }
         .alerta-exito h2 { margin: 0; }
+
+        /* SIN VIDAS */
+        .contenedor-sin-vidas { padding: 40px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-align: center; }
+        .corazon-roto { font-size: 5rem; margin-bottom: 20px; animation: latido-roto 2s infinite; }
+        .btn-recargar { width: 100%; max-width: 300px; padding: 18px; border-radius: 15px; font-size: 1.1rem; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; margin-top: 30px; background-color: #1cb0f6; color: white; box-shadow: 0 6px 0 #1899d6; transition: transform 0.1s; }
+        .btn-recargar:active { box-shadow: 0 0 0 #1899d6; transform: translateY(6px); }
+        @keyframes latido-roto { 0% { transform: scale(1); } 50% { transform: scale(1.1) rotate(-5deg); } 100% { transform: scale(1); } }
       `}</style>
 
       {/* BARRA SUPERIOR FIJA */}
@@ -174,8 +200,8 @@ export default function App() {
         <span className="stat-xp">⚡ {xp} XP</span>
       </div>
 
-      {/* RENDERIZADO CONDICIONAL (La magia de cambiar de pantalla) */}
-      {vistaActual === 'mapa' ? renderMapa() : renderLeccion()}
+      {/* RENDERIZADO CONDICIONAL MODIFICADO */}
+      {vidas === 0 ? renderSinVidas() : (vistaActual === 'mapa' ? renderMapa() : renderLeccion())}
       
     </div>
   );
